@@ -56,7 +56,6 @@ const form = () => {
                     <label htmlFor="name">Name</label> <br/>
                     <Input placeholder="Name" name="name" type="text" handleChange={handleChange}/>
                 </div>
-                {console.log(isLoading)}
                 {!isLoading && (<button onClick={(e)=> handleSUBMIT(e)} type="button" 
                     className="text-black mt-2 border-[1px] p-2 border-[#3d4f7c] rounded-full cursor-pointer"
                 >

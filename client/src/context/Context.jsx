@@ -1,9 +1,17 @@
 import React, {useState,useEffect} from 'react';
 import {ethers} from 'ethers';
-
+// import {ipfs} from "./ipfs"
+import {Buffer} from 'buffer';
+import axios from 'axios';
 import {contractABI,contractAddress} from "../utils/constants"
 
 export const Context = React.createContext()
+
+import { create } from "ipfs-http-client";
+
+const apiKey = '169afda3516aa910c316';
+const secretKey = '5e2bde26b4670d943b91760e9b07f92232bcbcf00ab2159b5e8fc2ef6c950e6b'
+
 
 const {ethereum} = window
 
@@ -29,7 +37,8 @@ export const ContextProvider = ({children}) =>{
     const [currentAccount, setCurrentAccount] = useState('')
     const [formData, setFormData] = useState({name:'',image:''})
     const [isLoading, setIsLoading] = useState(false)
-    const [base64, setBase64] = useState('')
+    const [buffer, setBuffer] = useState('' )
+    const [ipfsHash,setHash] = useState('')
     
 
     const checkIfWalletIsConnected = async() => {
@@ -62,19 +71,21 @@ export const ContextProvider = ({children}) =>{
 
     const handleChange = async (e, name) => {
         // console.log(e)
+        
         try{
             const file = e.target.files[0]
-            const reader = new FileReader();
+            let reader = new window.FileReader()
+            reader.readAsArrayBuffer(file)
             reader.onloadend = () => {
-                // Use a regex to remove data url part
-                setBase64(reader.result
-                    .replace('data:', '')
-                    .replace(/^.+,/, ''))
-                // Logs wL2dvYWwgbW9yZ...
-            };
-            reader.readAsDataURL(file);
-            console.log(base64)
-            // setBase64(base64String);
+                console.log("Buffer data: ", Buffer(reader.result));
+                setBuffer(Buffer(reader.result));
+            }  
+                    
+            console.log(buffer)
+            // ipfs.add(this.state.buffer, (err, ipfsHash) => {
+            //     console.log(err,ipfsHash);
+            //     setHash(ipfsHash[0].hash);
+            // });
         }catch(error){
             // console.log(error);
         }
@@ -85,28 +96,37 @@ export const ContextProvider = ({children}) =>{
         try{
             if(!ethereum) return alert('Please install metamask');
             //get the data from the form
+           
+            // const created = await client.add(buffer);
+            // console.log(created)
             const {name, image} = formData;
-            console.log({name,base64});
             const transactionContract = getContract(); 
-            console.log(transactionContract) 
-            // await ethereum.request({
-            //     method:'eth_sendTransaction',
-            //     params:[{
-            //         from:currentAccount,
-            //         to:addressTo,
-            //         gas:'0x5208',
-            //         value:parsedAmount._hex,
-            //     }]
-            // })
-            console.log('Transaction under way');
-            
-            setIsLoading(true);
-            const transactionhash = await transactionContract.uploadImage(base64,name);
-            console.log(transactionhash);
-            console.log('Loading, transaction hash: ' + transactionhash.hash);
-            await transactionhash.wait();
-            setIsLoading(false);
-            console.log('Done');
+
+            const formdata = new FormData();
+            console.log(buffer)
+            formdata.append("file", buffer);
+            console.log(formdata)
+            const resFile = await fetch({
+                    method: "post",
+                    url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                    data: formdata,
+                    headers: {
+                        'pinata_api_key': apiKey,
+                        'pinata_secret_api_key': secretKey,
+                        "Content-Type": "multipart/form-data"
+                    },
+                });
+            console.log(resFile)
+            // const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
+            // console.log(ImgHash); 
+            // console.log('Transaction under way');
+            // setIsLoading(true);
+            // const transactionhash = await transactionContract.uploadImage('abc',name);
+            // console.log(transactionhash);
+            // console.log('Loading, transaction hash: ' + transactionhash.hash);
+            // await transactionhash.wait();
+            // setIsLoading(false);
+            // console.log('Done');
         }catch(error){
             console.log(error);
             throw new Error('No Ethereum object')
@@ -119,7 +139,7 @@ export const ContextProvider = ({children}) =>{
     },[]);
 
     return (
-        <Context.Provider value={{connectWallet,currentAccount,formData, setFormData,handleChange,isLoading, uploadData,base64,setBase64}}>
+        <Context.Provider value={{connectWallet,currentAccount,formData, setFormData,handleChange,isLoading, uploadData,base64: buffer,setBase64: setBuffer}}>
             {children}
         </Context.Provider>
     );
