@@ -3,14 +3,12 @@ import {ethers} from 'ethers';
 // import {ipfs} from "./ipfs"
 import {Buffer} from 'buffer';
 import axios from 'axios';
+import { apiKey,secretKey } from '../utils/keys';
 import {contractABI,contractAddress} from "../utils/constants"
 
 export const Context = React.createContext()
 
 import { create } from "ipfs-http-client";
-
-const apiKey = '169afda3516aa910c316';
-const secretKey = '5e2bde26b4670d943b91760e9b07f92232bcbcf00ab2159b5e8fc2ef6c950e6b'
 
 
 const {ethereum} = window
