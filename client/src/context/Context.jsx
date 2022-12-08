@@ -114,7 +114,8 @@ export const ContextProvider = ({children}) =>{
                         "Content-Type": "multipart/form-data"
                     },
                 });
-            console.log(resFile)
+                console.log(resFile.data.IpfsHash)
+     
             // const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
             // console.log(ImgHash); 
             // console.log('Transaction under way');
