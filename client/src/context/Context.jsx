@@ -5,11 +5,13 @@ import {Buffer} from 'buffer';
 import axios from 'axios';
 import { apiKey,secretKey, jwtToken}  from '../utils/keys';
 import {contractABI,contractAddress} from "../utils/constants"
-
+// import {fs} from 'fs';
+// import {pinataSDK} from '@pinata/sdk';
+// // const pinataSDK = require('@pinata/sdk');
+// const pinata = new pinataSDK(apiKey, secretKey);
 
 export const Context = React.createContext()
 
-import { create } from "ipfs-http-client";
 
 
 const {ethereum} = window
@@ -125,6 +127,26 @@ export const ContextProvider = ({children}) =>{
         }
     }
 
+    // const pinIPFS2 = async() => {
+    //     const {image} = formData;
+    //     const readableStreamForFile = fs.createReadStream(image);
+    //     const options = {
+    //         pinataMetadata: {
+    //             name: 'Image Buffer',
+    //         },
+    //         pinataOptions: {
+    //             cidVersion: 0
+    //         }
+    //     };
+    //     pinata.pinFileToIPFS(readableStreamForFile, options).then((result) => {
+    //         //handle results here
+    //         console.log(result);
+    //     }).catch((err) => {
+    //         //handle error here
+    //         console.log(err);
+    //     });
+    // }
+
     const uploadData = async () => {
         try{
             if(!ethereum) return alert('Please install metamask');
@@ -136,6 +158,7 @@ export const ContextProvider = ({children}) =>{
             const transactionContract = getContract(); 
 
             await pinIPFS();
+            // await pinIPFS2();
      
             // const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
             // console.log(ImgHash); 
