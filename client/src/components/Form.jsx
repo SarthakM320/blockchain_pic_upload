@@ -19,7 +19,7 @@ const Input = ({placeholder,name,type,value,handleChange}) => (
 
 
 const form = () => {
-    const {currentAccount,connectWallet,uploadData,isLoading,setFormData,handleChange,formData,base64,setBase64} = useContext(Context);
+    const {currentAccount,connectWallet,uploadData,isLoading,handleChange,formData,base64} = useContext(Context);
 
     const handleSUBMIT =async (e) => {
         const {name,image} = formData;

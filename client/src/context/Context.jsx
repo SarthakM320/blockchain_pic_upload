@@ -76,12 +76,13 @@ export const ContextProvider = ({children}) =>{
         try{
             const file = e.target.files[0]
             let reader = new window.FileReader()
-            reader.readAsArrayBuffer(file)
-            reader.onloadend = () => {
-                console.log("Buffer data: ", Buffer(reader.result));
-                setBuffer(Buffer(reader.result));
-            }  
-                    
+            // reader.readAsArrayBuffer(file)
+            // reader.onloadend = () => {
+            //     console.log("Buffer data: ", Buffer(reader.result));
+            //     setBuffer(Buffer(reader.result));
+            // } 
+
+            setBuffer(file)                    
              
             // ipfs.add(this.state.buffer, (err, ipfsHash) => {
             //     console.log(err,ipfsHash);
@@ -94,58 +95,39 @@ export const ContextProvider = ({children}) =>{
     }
 
     const pinIPFS = async() => {
-        const formdata = new FormData();
-         
-        formdata.append("file", buffer);
-        console.log(formdata)
-
+        const data = new FormData();
+        data.append("file", buffer);
+        
         const metadata = JSON.stringify({
             name: 'Image Buffer',
         });
-        formdata.append('pinataMetadata', metadata);
-
+        data.append('pinataMetadata', metadata);
+        
         const options = JSON.stringify({
             cidVersion: 0,
         })
-        formdata.append('pinataOptions', options);
+        data.append('pinataOptions', options);
+        
         
         try{
             const resFile = await axios({
                 method: 'post',
                 url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
                 
-                data: formdata,
+                data: data,
                 headers: {
                     'pinata_api_key': apiKey,
                     'pinata_secret_api_key': secretKey,
                     'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
                 },
             });
-            console.log(resFile)
+            return resFile;
         }catch(error){
             console.log(error)
         }
     }
 
-    // const pinIPFS2 = async() => {
-    //     const {image} = formData;
-    //     const readableStreamForFile = fs.createReadStream(image);
-    //     const options = {
-    //         pinataMetadata: {
-    //             name: 'Image Buffer',
-    //         },
-    //         pinataOptions: {
-    //             cidVersion: 0
-    //         }
-    //     };
-    //     pinata.pinFileToIPFS(readableStreamForFile, options).then((result) => {
-    //         //handle results here
-    //         console.log(result);
-    //     }).catch((err) => {
-    //         //handle error here
-    //         console.log(err);
-    //     });
-    // }
+    
 
     const uploadData = async () => {
         try{
@@ -157,19 +139,19 @@ export const ContextProvider = ({children}) =>{
             const {name, image} = formData;
             const transactionContract = getContract(); 
 
-            await pinIPFS();
+            const resFile = await pinIPFS();
             // await pinIPFS2();
      
-            // const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
-            // console.log(ImgHash); 
-            // console.log('Transaction under way');
-            // setIsLoading(true);
-            // const transactionhash = await transactionContract.uploadImage('abc',name);
-            // console.log(transactionhash);
-            // console.log('Loading, transaction hash: ' + transactionhash.hash);
-            // await transactionhash.wait();
-            // setIsLoading(false);
-            // console.log('Done');
+            const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
+            console.log(ImgHash); 
+            console.log('Transaction under way');
+            setIsLoading(true);
+            const transactionhash = await transactionContract.uploadImage(ImgHash,name);
+            console.log(transactionhash);
+            console.log('Loading, transaction hash: ' + transactionhash.hash);
+            await transactionhash.wait();
+            setIsLoading(false);
+            console.log('Done');
         }catch(error){
             console.log(error);
             throw new Error('No Ethereum object')
