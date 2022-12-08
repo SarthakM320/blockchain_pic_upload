@@ -3,8 +3,9 @@ import {ethers} from 'ethers';
 // import {ipfs} from "./ipfs"
 import {Buffer} from 'buffer';
 import axios from 'axios';
-import { apiKey,secretKey } from '../utils/keys';
+import { apiKey,secretKey, jwtToken}  from '../utils/keys';
 import {contractABI,contractAddress} from "../utils/constants"
+
 
 export const Context = React.createContext()
 
@@ -79,7 +80,7 @@ export const ContextProvider = ({children}) =>{
                 setBuffer(Buffer(reader.result));
             }  
                     
-            console.log(buffer)
+             
             // ipfs.add(this.state.buffer, (err, ipfsHash) => {
             //     console.log(err,ipfsHash);
             //     setHash(ipfsHash[0].hash);
@@ -88,6 +89,40 @@ export const ContextProvider = ({children}) =>{
             // console.log(error);
         }
         setFormData((prevState)=> ({...prevState,[name]:e.target.value})) //important
+    }
+
+    const pinIPFS = async() => {
+        const formdata = new FormData();
+         
+        formdata.append("file", buffer);
+        console.log(formdata)
+
+        const metadata = JSON.stringify({
+            name: 'Image Buffer',
+        });
+        formdata.append('pinataMetadata', metadata);
+
+        const options = JSON.stringify({
+            cidVersion: 0,
+        })
+        formdata.append('pinataOptions', options);
+        
+        try{
+            const resFile = await axios({
+                method: 'post',
+                url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                
+                data: formdata,
+                headers: {
+                    'pinata_api_key': apiKey,
+                    'pinata_secret_api_key': secretKey,
+                    'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+                },
+            });
+            console.log(resFile)
+        }catch(error){
+            console.log(error)
+        }
     }
 
     const uploadData = async () => {
@@ -100,21 +135,7 @@ export const ContextProvider = ({children}) =>{
             const {name, image} = formData;
             const transactionContract = getContract(); 
 
-            const formdata = new FormData();
-            console.log(buffer)
-            formdata.append("file", buffer);
-            console.log(formdata)
-            const resFile = await fetch({
-                    method: "post",
-                    url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-                    data: formdata,
-                    headers: {
-                        'pinata_api_key': apiKey,
-                        'pinata_secret_api_key': secretKey,
-                        "Content-Type": "multipart/form-data"
-                    },
-                });
-                console.log(resFile.data.IpfsHash)
+            await pinIPFS();
      
             // const ImgHash = `ipfs://${resFile.data.IpfsHash}`;
             // console.log(ImgHash); 

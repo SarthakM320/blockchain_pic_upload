@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@pinata/sdk": "^2.1.0",
     "axios": "^1.2.1",
     "buffer": "^6.0.3",
     "ethers": "^5.7.2",
